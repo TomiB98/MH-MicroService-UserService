@@ -34,6 +34,11 @@ public class UserServiceImpl implements UserService {
         return new UserDTO(getUserById(id));
     }
 
+    @Override
+    public String getEmailById(Long id) throws NoUsersFoundException {
+        UserEntity user = userRepository.findById(id).orElseThrow( () -> new NoUsersFoundException("User with ID " + id + " not found."));
+        return user.getEmail();
+    }
 
     @Override
     public List<UserDTO> getAllUsers() throws NoUsersFoundException {

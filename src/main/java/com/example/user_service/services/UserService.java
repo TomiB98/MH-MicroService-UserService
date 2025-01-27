@@ -17,6 +17,8 @@ public interface UserService {
     UserDTO getUserDTOById (Long id) throws NoUsersFoundException;
     List<UserDTO> getAllUsers() throws NoUsersFoundException;
 
+    String getEmailById(Long id) throws NoUsersFoundException;
+
     void createNewUser(NewUser newUser) throws Exception;
     UserEntity saveUser(UserEntity user);
 

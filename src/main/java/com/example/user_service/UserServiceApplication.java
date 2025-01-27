@@ -21,12 +21,14 @@ public class UserServiceApplication {
 
 			UserEntity user = new UserEntity("tomas@gmail.com", "Tomas", "Tomas123.", RoleType.USER);
 			userRepository.save(user);
-			UserEntity user1 = new UserEntity("tom@gmail.com", "Tomi", "Tomito123.", RoleType.ADMIN);
+			UserEntity user1 = new UserEntity("tom@gmail.com", "Tomi", "Tomito123.", RoleType.USER);
 			userRepository.save(user1);
 			UserEntity user2 = new UserEntity("manuel@gmail.com", "Manuel", "Manuel123.", RoleType.ADMIN);
 			userRepository.save(user2);
 			UserEntity user3 = new UserEntity("manu@gmail.com", "Manu", "Manuelito123.", RoleType.USER);
 			userRepository.save(user3);
+			UserEntity user4 = new UserEntity("manubal@gmail.com", "Manuca", "Manuca123.", RoleType.USER);
+			userRepository.save(user4);
 
 			System.out.println("User Server Running!");
 		};
