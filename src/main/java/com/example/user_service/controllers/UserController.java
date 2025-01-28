@@ -69,7 +69,7 @@ public class UserController {
     }
 
     @GetMapping("/users")
-    @Operation(summary = "Gets the user data in the db.", description = "Returns all the data of all the users.")
+    @Operation(summary = "Gets all the user data in the db.", description = "Returns all the data of all the users.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Data successfully received."),
             //@ApiResponse(responseCode = "403", description = "Forbidden access to another users data."),
