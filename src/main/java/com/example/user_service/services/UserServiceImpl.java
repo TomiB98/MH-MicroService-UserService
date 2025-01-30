@@ -1,13 +1,13 @@
 package com.example.user_service.services;
 
-import com.example.user_service.dtos.NewUser;
-import com.example.user_service.dtos.UpdateUser;
-import com.example.user_service.dtos.UserDTO;
+import com.example.user_service.dtos.*;
 import com.example.user_service.exceptions.*;
 import com.example.user_service.models.RoleType;
 import com.example.user_service.models.UserEntity;
 import com.example.user_service.repositories.UserRepository;
+import jakarta.validation.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,6 +23,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @Override
     public UserEntity getUserById(Long id) throws NoUsersFoundException {
         return userRepository.findById(id).orElseThrow( () -> new NoUsersFoundException("User with ID " + id + " not found."));
@@ -34,17 +37,25 @@ public class UserServiceImpl implements UserService {
         return new UserDTO(getUserById(id));
     }
 
+
+    @Override
+    public UserAllDataDTO getUserDTOByIdWithRole(Long id) throws NoUsersFoundException {
+        return new UserAllDataDTO(getUserById(id));
+    }
+
+
     @Override
     public String getEmailById(Long id) throws NoUsersFoundException {
         UserEntity user = userRepository.findById(id).orElseThrow( () -> new NoUsersFoundException("User with ID " + id + " not found."));
         return user.getEmail();
     }
 
-    @Override
-    public List<UserDTO> getAllUsers() throws NoUsersFoundException {
 
-        List<UserDTO> users = userRepository.findAll().stream()
-                .map(UserDTO::new)
+    @Override
+    public List<UserAllDataDTO> getAllUsers() throws NoUsersFoundException {
+
+        List<UserAllDataDTO> users = userRepository.findAll().stream()
+                .map(UserAllDataDTO::new)
                 .collect(Collectors.toList());
 
         if (users.isEmpty()) {
@@ -59,8 +70,7 @@ public class UserServiceImpl implements UserService {
     public void createNewUser(NewUser newUser) throws Exception {
         validateNewUser(newUser);
         RoleType role = RoleType.valueOf(newUser.role());
-        UserEntity user = new UserEntity(newUser.email(), newUser.username(), newUser.password(), role);
-        //UserEntity savedUser = saveUser(user);
+        UserEntity user = new UserEntity(newUser.email(), newUser.username(), passwordEncoder.encode(newUser.password()), role);
         saveUser(user);
     }
 
@@ -85,7 +95,24 @@ public class UserServiceImpl implements UserService {
 
         if (!updatedUser.password().isBlank()) {
             validateUpdatedUser(updatedUser, user);
-            user.setPassword(updatedUser.password());
+            user.setPassword(passwordEncoder.encode(updatedUser.password()));
+        }
+
+        userRepository.save(user);
+        return new UserDTO(user);
+    }
+
+
+    @Override
+    public UserDTO updateUserRoleById(UpdateUserRole updatedUserRole, Long id) throws Exception {
+
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(()-> new NoUsersFoundException("User with ID " + id + " not found."));
+
+        if (!updatedUserRole.role().isBlank()) {
+            validateIfRoleIsCorrect(updatedUserRole.role());
+            RoleType role = RoleType.valueOf(updatedUserRole.role());
+            user.setRole(role);
         }
 
         userRepository.save(user);
@@ -119,7 +146,7 @@ public class UserServiceImpl implements UserService {
     }
 
     public void validateEqualPassword (String updatedPassword, String password) throws PasswordException {
-        if (updatedPassword.equals(password)) {
+        if (passwordEncoder.matches(updatedPassword, password)) {
             throw new PasswordException("New password must be different to the old one.");
         }
     }
