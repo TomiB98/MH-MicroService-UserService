@@ -4,6 +4,7 @@ import com.example.user_service.dtos.*;
 import com.example.user_service.exceptions.*;
 import com.example.user_service.models.RoleType;
 import com.example.user_service.models.UserEntity;
+import com.example.user_service.rabbitmq.RabbitMQProducer2;
 import com.example.user_service.repositories.UserRepository;
 import jakarta.validation.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private RabbitMQProducer2 rabbitMQProducer2;
 
     @Override
     public UserEntity getUserById(Long id) throws NoUsersFoundException {
@@ -72,6 +76,7 @@ public class UserServiceImpl implements UserService {
         RoleType role = RoleType.valueOf(newUser.role());
         UserEntity user = new UserEntity(newUser.email(), newUser.username(), passwordEncoder.encode(newUser.password()), role);
         saveUser(user);
+        rabbitMQProducer2.sendWelcomeEmail(newUser.email());
     }
 
 

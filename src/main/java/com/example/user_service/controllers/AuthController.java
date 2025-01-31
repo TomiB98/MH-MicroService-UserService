@@ -40,6 +40,7 @@ public class AuthController {
     @Autowired
     UserService userService;
 
+
     @PostMapping("/login")
     public ResponseEntity<String> authenticateUser(@RequestBody LoginUser loginRequest) {
 
