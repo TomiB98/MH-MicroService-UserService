@@ -85,26 +85,26 @@ public class UserController {
     }
 
 
-    @GetMapping("/email/{id}")
-    @Operation(summary = "Gets the user email with the id", description = "Receives an id and returns the specified user email.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Data successfully received."),
-            //@ApiResponse(responseCode = "403", description = "Forbidden access to another users data."),
-            @ApiResponse(responseCode = "404", description = "Bad request, invalid id.")
-    })
-    public ResponseEntity<String> getUserEmail(@PathVariable Long id) throws NoUsersFoundException {
-        try {
-            String userEmail = userService.getEmailById(id);
-            return ResponseEntity.ok(userEmail);
-
-        } catch (NoUsersFoundException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-
-        } catch (Exception e) {
-            return new ResponseEntity<>("An error occurred while searching the user email, try again later.", HttpStatus.INTERNAL_SERVER_ERROR);
-
-        }
-    }
+//    @GetMapping("/email/{id}")
+//    @Operation(summary = "Gets the user email with the id", description = "Receives an id and returns the specified user email.")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "Data successfully received."),
+//            //@ApiResponse(responseCode = "403", description = "Forbidden access to another users data."),
+//            @ApiResponse(responseCode = "404", description = "Bad request, invalid id.")
+//    })
+//    public ResponseEntity<String> getUserEmail(@PathVariable Long id) throws NoUsersFoundException {
+//        try {
+//            String userEmail = userService.getEmailById(id);
+//            return ResponseEntity.ok(userEmail);
+//
+//        } catch (NoUsersFoundException e) {
+//            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+//
+//        } catch (Exception e) {
+//            return new ResponseEntity<>("An error occurred while searching the user email, try again later.", HttpStatus.INTERNAL_SERVER_ERROR);
+//
+//        }
+//    }
 
     @GetMapping("/users")
     @Operation(summary = "Gets all the user data in the db.", description = "Returns all the data of all the users.")
