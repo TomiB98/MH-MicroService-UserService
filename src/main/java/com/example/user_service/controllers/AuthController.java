@@ -3,6 +3,7 @@ package com.example.user_service.controllers;
 import com.example.user_service.config.JwtUtils;
 import com.example.user_service.dtos.LoginUser;
 import com.example.user_service.dtos.NewUser;
+import com.example.user_service.exceptions.NoUsersFoundException;
 import com.example.user_service.models.UserEntity;
 import com.example.user_service.repositories.UserRepository;
 import com.example.user_service.services.UserService;
@@ -14,10 +15,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.regex.Matcher;
 
@@ -35,9 +33,6 @@ public class AuthController {
     private JwtUtils jwtUtil;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     UserService userService;
 
 
@@ -53,8 +48,13 @@ public class AuthController {
             );
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            UserEntity user = userRepository.findByEmail(authentication.getName()).orElse(null);
+            UserEntity user = userService.getUserByEmail(authentication.getName());
             assert user != null;
+
+            if (!user.isVerified()) {
+                return new ResponseEntity<>("Your email is not verified. Check your inbox.", HttpStatus.UNAUTHORIZED);
+            }
+
             String jwt = jwtUtil.createToken(authentication.getName(), user.getId(), user.getRole());
             return ResponseEntity.ok(jwt);
 
@@ -72,13 +72,31 @@ public class AuthController {
             validateNewUser(newUser);
 
             userService.createNewUser(newUser);
-            return new ResponseEntity<>("User created.", HttpStatus.CREATED);
+            return new ResponseEntity<>("User registered successfully.", HttpStatus.CREATED);
 
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
 
         }
     }
+
+
+    @GetMapping("/verify")
+    public ResponseEntity<String> verifyEmail(@RequestParam("token") String token) {
+        UserEntity user = userService.findByVerificationToken(token);
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid or expired token.");
+        }
+
+        user.setVerified(true);
+        user.setVerificationToken(null);
+        userService.saveUser(user);
+        userService.welcomeEmail(user.getEmail());
+
+        return ResponseEntity.ok("Email verified successfully! You can now log in!");
+    }
+
 
     // Validations
     public void validateNewUser (NewUser newUser) throws Exception {
@@ -116,7 +134,7 @@ public class AuthController {
     }
 
     public void validateIfEmailExist (String email) {
-        if(userRepository.findByEmail(email).isPresent()) {
+        if (userService.validateEmailExist(email) != null) {
             throw new ValidationException ("This email is already registered.");
         }
     }
@@ -127,3 +145,10 @@ public class AuthController {
         }
     }
 }
+
+//    @Autowired
+//    private UserRepository userRepository;
+
+//            UserEntity user = userRepository.findByEmail(authentication.getName()).orElse(null);
+
+//        if(userRepository.findByEmail(email).isPresent()) {

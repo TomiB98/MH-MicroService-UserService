@@ -16,4 +16,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     @Query("SELECT DISTINCT u.role FROM UserEntity u")
     List<RoleType> findAllRoles();
+
+    UserEntity findByVerificationToken(String verificationToken);
 }

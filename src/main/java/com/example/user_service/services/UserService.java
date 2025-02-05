@@ -12,13 +12,16 @@ import java.util.List;
 public interface UserService {
 
     UserEntity getUserById (Long id) throws NoUsersFoundException;
+    UserEntity getUserByEmail(String email) throws NoUsersFoundException;
     UserDTO getUserDTOById (Long id) throws NoUsersFoundException;
+    String getEmailById(Long id) throws NoUsersFoundException;
+    String validateEmailExist(String email);
     UserAllDataDTO getUserDTOByIdWithRole(Long id) throws NoUsersFoundException;
     List<UserAllDataDTO> getAllUsers() throws NoUsersFoundException;
 
-    String getEmailById(Long id) throws NoUsersFoundException;
-
     void createNewUser(NewUser newUser) throws Exception;
+    UserEntity findByVerificationToken(String token);
+    void welcomeEmail (String email);
     UserEntity saveUser(UserEntity user);
 
     UserDTO updateUserById(UpdateUser updatedUser, Long id) throws Exception;

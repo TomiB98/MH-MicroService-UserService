@@ -14,6 +14,9 @@ public class UserEntity {
 
     private String email, username, password;
 
+    private boolean isVerified = false;
+    private String verificationToken;
+
     public UserEntity() { }
 
     public UserEntity(String email, String username, String password, RoleType role) {
@@ -57,5 +60,21 @@ public class UserEntity {
 
     public void setRole(RoleType role) {
         this.role = role;
+    }
+
+    public boolean isVerified() {
+        return isVerified;
+    }
+
+    public void setVerified(boolean verified) {
+        isVerified = verified;
+    }
+
+    public String getVerificationToken() {
+        return verificationToken;
+    }
+
+    public void setVerificationToken(String verificationToken) {
+        this.verificationToken = verificationToken;
     }
 }

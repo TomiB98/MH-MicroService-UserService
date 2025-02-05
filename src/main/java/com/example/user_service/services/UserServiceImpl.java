@@ -6,12 +6,12 @@ import com.example.user_service.models.RoleType;
 import com.example.user_service.models.UserEntity;
 import com.example.user_service.rabbitmq.RabbitMQProducer2;
 import com.example.user_service.repositories.UserRepository;
-import jakarta.validation.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
@@ -37,14 +37,22 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public UserDTO getUserDTOById(Long id) throws NoUsersFoundException {
-        return new UserDTO(getUserById(id));
+    public UserEntity getUserByEmail(String email) throws NoUsersFoundException {
+        return userRepository.findByEmail(email).orElseThrow( () -> new NoUsersFoundException("User with Email " + email + " not found."));
     }
 
 
     @Override
-    public UserAllDataDTO getUserDTOByIdWithRole(Long id) throws NoUsersFoundException {
-        return new UserAllDataDTO(getUserById(id));
+    public String validateEmailExist(String email) {
+        return userRepository.findByEmail(email)
+                .map(UserEntity::getEmail)
+                .orElse(null);
+    }
+
+
+    @Override
+    public UserDTO getUserDTOById(Long id) throws NoUsersFoundException {
+        return new UserDTO(getUserById(id));
     }
 
 
@@ -52,6 +60,12 @@ public class UserServiceImpl implements UserService {
     public String getEmailById(Long id) throws NoUsersFoundException {
         UserEntity user = userRepository.findById(id).orElseThrow( () -> new NoUsersFoundException("User with ID " + id + " not found."));
         return user.getEmail();
+    }
+
+
+    @Override
+    public UserAllDataDTO getUserDTOByIdWithRole(Long id) throws NoUsersFoundException {
+        return new UserAllDataDTO(getUserById(id));
     }
 
 
@@ -73,10 +87,33 @@ public class UserServiceImpl implements UserService {
     @Override
     public void createNewUser(NewUser newUser) throws Exception {
         validateNewUser(newUser);
+        // Transforms the role from string to enum
         RoleType role = RoleType.valueOf(newUser.role());
-        UserEntity user = new UserEntity(newUser.email(), newUser.username(), passwordEncoder.encode(newUser.password()), role);
+        // Encodes the password
+        String encodedPassword = passwordEncoder.encode(newUser.password());
+        // Generates a token randomly to verify the user email
+        String verificationToken = UUID.randomUUID().toString();
+
+        UserEntity user = new UserEntity(newUser.email(), newUser.username(), encodedPassword, role);
+        // Sets the random token to the user
+        user.setVerificationToken(verificationToken);
+
+        VerificationEmailDTO verificationEmailDTO = new VerificationEmailDTO(newUser.email(), verificationToken);
         saveUser(user);
-        rabbitMQProducer2.sendWelcomeEmail(newUser.email());
+        rabbitMQProducer2.sendVerificationEmail(verificationEmailDTO);
+        //rabbitMQProducer2.sendWelcomeEmail(newUser.email());
+    }
+
+
+    @Override
+    public UserEntity findByVerificationToken(String token) {
+        return userRepository.findByVerificationToken(token);
+    }
+
+
+    @Override
+    public void welcomeEmail (String email) {
+        rabbitMQProducer2.sendWelcomeEmail(email);
     }
 
 
