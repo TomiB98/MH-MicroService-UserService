@@ -25,7 +25,7 @@ public interface UserService {
     UserEntity saveUser(UserEntity user);
 
     UserDTO updateUserById(UpdateUser updatedUser, Long id) throws Exception;
-    UserDTO updateUserRoleById(UpdateUserRole updatedUserRole, Long id) throws Exception;
+    UserDTO updateUserRoleVerifiedById(UpdateUserRoleOrVerified updatedUserRole, Long id) throws Exception;
 
     List<RoleType> getAllRoles();
 }

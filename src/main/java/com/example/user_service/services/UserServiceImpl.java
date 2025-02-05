@@ -146,15 +146,25 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public UserDTO updateUserRoleById(UpdateUserRole updatedUserRole, Long id) throws Exception {
+    public UserDTO updateUserRoleVerifiedById(UpdateUserRoleOrVerified updateUserRoleOrVerified, Long id) throws Exception {
 
         UserEntity user = userRepository.findById(id)
                 .orElseThrow(()-> new NoUsersFoundException("User with ID " + id + " not found."));
 
-        if (!updatedUserRole.role().isBlank()) {
-            validateIfRoleIsCorrect(updatedUserRole.role());
-            RoleType role = RoleType.valueOf(updatedUserRole.role());
+        if (!updateUserRoleOrVerified.role().isBlank()) {
+            validateIfRoleIsCorrect(updateUserRoleOrVerified.role());
+            RoleType role = RoleType.valueOf(updateUserRoleOrVerified.role());
             user.setRole(role);
+        }
+
+        if(!updateUserRoleOrVerified.isVerified().isBlank()) {
+            validateIfVerifiedIsCorrect(updateUserRoleOrVerified.isVerified());
+            if(updateUserRoleOrVerified.isVerified().equals("true")) {
+                user.setVerified(true);
+            }
+            if(updateUserRoleOrVerified.isVerified().equals("false")) {
+                user.setVerified(false);
+            }
         }
 
         userRepository.save(user);
@@ -236,6 +246,12 @@ public class UserServiceImpl implements UserService {
     public static void validateIfRoleIsCorrect(String role) throws RoleException {
         if (!role.equals("USER") && !role.equals("ADMIN")) {
             throw new RoleException("Role must be ADMIN or USER.");
+        }
+    }
+
+    public static void validateIfVerifiedIsCorrect(String verified) throws RoleException {
+        if (!verified.equals("true") && !verified.equals("false")) {
+            throw new RoleException("IsVerified must be true or false.");
         }
     }
 }

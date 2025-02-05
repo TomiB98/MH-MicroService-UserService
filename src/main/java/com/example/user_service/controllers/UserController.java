@@ -1,7 +1,7 @@
 package com.example.user_service.controllers;
 
 import com.example.user_service.dtos.UpdateUser;
-import com.example.user_service.dtos.UpdateUserRole;
+import com.example.user_service.dtos.UpdateUserRoleOrVerified;
 import com.example.user_service.dtos.UserAllDataDTO;
 import com.example.user_service.dtos.UserDTO;
 import com.example.user_service.exceptions.*;
@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -184,14 +183,14 @@ public class UserController {
     }
 
 
-    @PutMapping("update/role/{id}")
+    @PutMapping("update/roleOrVerification/{id}")
     @Operation(summary = "Updates an user data with the id", description = "Updates the user data independently or all at once.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User role successfully updated."),
             @ApiResponse(responseCode = "403", description = "Forbidden access to another users data, must be admin."),
             @ApiResponse(responseCode = "400", description = "Bad request, invalid id.")
     })
-    public ResponseEntity<?> updateUserRoleById(@RequestBody UpdateUserRole updatedUserRole, @PathVariable Long id, HttpServletRequest request) throws Exception {
+    public ResponseEntity<?> updateUserRoleById(@RequestBody UpdateUserRoleOrVerified updateUserRoleOrVerified, @PathVariable Long id, HttpServletRequest request) throws Exception {
 
         try {
             String authenticatedUserRole = tokenDataService.getRole(request);
@@ -200,9 +199,9 @@ public class UserController {
                 return new ResponseEntity<>("Forbidden: You cannot access this data.", HttpStatus.FORBIDDEN);
             }
 
-            userService.updateUserRoleById(updatedUserRole, id);
+            userService.updateUserRoleVerifiedById(updateUserRoleOrVerified, id);
             String userEmail = userService.getEmailById(id);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Role successfully updated on user with email: " + userEmail + " - and id: " + id + ".");
+            return ResponseEntity.status(HttpStatus.CREATED).body("User successfully updated with email: " + userEmail + " - and id: " + id + ".");
 
         } catch (NoUsersFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);

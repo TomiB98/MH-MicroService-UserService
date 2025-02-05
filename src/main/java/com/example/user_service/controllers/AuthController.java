@@ -72,7 +72,7 @@ public class AuthController {
             validateNewUser(newUser);
 
             userService.createNewUser(newUser);
-            return new ResponseEntity<>("User registered successfully.", HttpStatus.CREATED);
+            return new ResponseEntity<>("User registered successfully, check your inbox to validate your email.", HttpStatus.CREATED);
 
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
