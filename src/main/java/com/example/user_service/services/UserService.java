@@ -28,4 +28,6 @@ public interface UserService {
     UserDTO updateUserRoleVerifiedById(UpdateUserRoleOrVerified updatedUserRole, Long id) throws Exception;
 
     List<RoleType> getAllRoles();
+
+    void deleteUnverifiedUsers() throws NoUsersFoundException;
 }

@@ -214,6 +214,33 @@ public class UserController {
 
         }
     }
+
+    @DeleteMapping("/unverified")
+    @Operation(summary = "Deletes all unverified users", description = "Deletes all unverified users")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Unverified users successfully deleted."),
+            @ApiResponse(responseCode = "403", description = "Forbidden access, must be admin."),
+            @ApiResponse(responseCode = "200", description = "There are no unverified users.")
+    })
+    public ResponseEntity<String> deleteUnverifiedUsers(HttpServletRequest request) {
+        try {
+            String authenticatedUserRole = tokenDataService.getRole(request);
+
+            if (!authenticatedUserRole.equals("ADMIN")) {
+                return new ResponseEntity<>("Forbidden: You cannot access this data.", HttpStatus.FORBIDDEN);
+            }
+
+            userService.deleteUnverifiedUsers();
+            return ResponseEntity.ok("Unverified users successfully deleted.");
+
+        } catch ( NoUsersFoundException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+
+        } catch (Exception e) {
+            return new ResponseEntity<>("An error occurred while deleting unverified users, try again later.", HttpStatus.INTERNAL_SERVER_ERROR);
+
+        }
+    }
 }
 
 

@@ -178,6 +178,16 @@ public class UserServiceImpl implements UserService {
     }
 
 
+    @Override
+    public void deleteUnverifiedUsers() throws NoUsersFoundException {
+        long count = userRepository.countUnverifiedUsers();
+        if (count == 0) {
+            throw new NoUsersFoundException("There are no unverified users.");
+        }
+        userRepository.deleteUnverifiedUsers();
+    }
+
+
     //Validations
     public void validateUpdatedUser (UpdateUser updateUser, UserEntity user) throws Exception {
         validateEqualPassword(updateUser.password(), user.getPassword());

@@ -29,7 +29,7 @@ public class UserServiceApplication {
 			userRepository.save(user);
 
 			UserEntity user1 = new UserEntity("tom@gmail.com", "Tomi", passwordEncoder.encode("Tomito123."), RoleType.USER);
-			user1.setVerified(true);
+			//user1.setVerified(true);
 			userRepository.save(user1);
 
 			UserEntity user2 = new UserEntity("manuel@gmail.com", "Manuel", passwordEncoder.encode("Manuel123."), RoleType.ADMIN);
